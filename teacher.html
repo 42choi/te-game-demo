@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>て형 조립 챌린지 — 선생님 화면</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1b1f3b;--muted:#6b7099;--line:#e3e5f3;--coral:#e85a5a;--sun:#f0b429;--mint:#22b07d;--bg:#f5f6fb}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',system-ui,sans-serif;padding:24px 16px}
+.jp{font-family:'Noto Sans JP','Noto Sans KR',sans-serif}
+.wrap{max-width:1100px;margin:0 auto}
+h1{font-size:24px;font-weight:900;margin-bottom:4px}
+.sub{color:var(--muted);font-size:14px;margin-bottom:18px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px}
+.bar label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+.bar input,.bar select{font-size:15px;padding:9px 10px;border:1px solid #cfd3ea;border-radius:9px;font-family:inherit;background:#fff}
+.bar .chk{display:flex;align-items:center;gap:6px;font-size:14px;padding-bottom:10px}
+button{font-family:inherit;font-size:15px;font-weight:700;border:0;border-radius:9px;padding:10px 18px;background:var(--ink);color:#fff;cursor:pointer}
+button.light{background:#e8eaf6;color:var(--ink)}
+.msg{color:var(--coral);font-size:14px;margin:6px 0 12px;min-height:18px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+.card .n{font-size:30px;font-weight:900}
+.card .l{font-size:13px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;margin-bottom:16px}
+.box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
+.box h2{font-size:16px;margin-bottom:12px}
+.g{display:flex;align-items:center;gap:10px;margin:10px 0;font-size:15px}
+.g .nm{width:110px}
+.g .tr{flex:1;height:18px;background:#eef0f8;border-radius:9px;overflow:hidden}
+.g .fl{height:100%;border-radius:9px}
+.g .v{width:120px;text-align:right;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--muted);font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:12px;font-weight:700}
+.low{background:#fde8e8;color:#c23b3b}.mid{background:#fff3d6;color:#9a6b00}.hi{background:#dcf5ea;color:#16794f}
+.legend{font-size:12px;color:var(--muted);margin-top:8px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.cards{grid-template-columns:1fr 1fr 1fr}.card .n{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>て형 조립 챌린지 · 선생님 화면</h1>
+  <p class="sub">반·날짜별 참여 현황과 어미 그룹별 오답을 확인하세요.</p>
+
+  <div class="bar">
+    <div><label>비밀번호</label><input id="key" type="password" placeholder="Apps Script에 정한 비밀번호" size="18"></div>
+    <div><label>반</label>
+      <select id="cls"><option value="all">전체</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
+    <div><label>날짜</label><input id="date" type="date"></div>
+    <div class="chk"><input type="checkbox" id="alldate"><label for="alldate" style="margin:0;font-size:14px;color:var(--ink)">전체 기간</label></div>
+    <button id="go">불러오기</button>
+    <button class="light" id="proj">프로젝터 순위 열기</button>
+  </div>
+  <div class="msg" id="msg"></div>
+
+  <div class="cards">
+    <div class="card"><div class="n" id="c-students">–</div><div class="l">참여 학생</div></div>
+    <div class="card"><div class="n" id="c-plays">–</div><div class="l">총 플레이 횟수</div></div>
+    <div class="card"><div class="n" id="c-avg">–</div><div class="l">평균 점수</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="box">
+      <h2>어미 그룹별 오답률</h2>
+      <div id="groups"><p class="legend">불러오기를 눌러주세요.</p></div>
+      <p class="legend">막대 = 오답률 · 빨강 30% 이상, 노랑 15% 이상</p>
+    </div>
+    <div class="box">
+      <h2>많이 틀린 동사 TOP 10</h2>
+      <table><thead><tr><th>동사</th><th>그룹</th><th class="r">오답/출제</th><th class="r">오답률</th></tr></thead><tbody id="verbs"></tbody></table>
+    </div>
+  </div>
+
+  <div class="box">
+    <h2>학생별 결과 <span style="font-weight:400;font-size:12px;color:var(--muted)">(머리글을 누르면 정렬)</span></h2>
+    <table><thead><tr>
+      <th data-k="sid">학번</th><th data-k="name">이름</th>
+      <th class="r" data-k="plays">플레이</th><th class="r" data-k="best">최고점</th><th class="r" data-k="acc">정답률</th><th data-k="weak">가장 많이 틀린 그룹</th>
+    </tr></thead><tbody id="students"></tbody></table>
+  </div>
+</div>
+
+<script>
+// index.html 과 같은 Apps Script 웹 앱 URL을 붙여넣으세요
+const API_URL = 'https://script.google.com/macros/s/AKfycbxXIezyeLZweTt5VjMhuvD9mYdxmqlEspROrnPRz85M8alxo7hzc7fXDIBFJIMjhtfoxA/exec';
+
+const LABEL = {'うつる':'う・つ・る','むぶぬ':'む・ぶ・ぬ','く':'く','ぐ':'ぐ','す':'す','いく':'いく(예외)'};
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today = new Date(Date.now() + 9*3600e3).toISOString().slice(0,10); // 한국 날짜
+$('date').value = today;
+try { $('key').value = sessionStorage.getItem('teg-key') || ''; } catch(e) {}
+$('alldate').onchange = () => { $('date').disabled = $('alldate').checked; };
+let STU = [], sortK = 'sid', sortDir = 1;
+
+$('go').onclick = load;
+$('proj').onclick = () => {
+  window.open('index.html?board=' + $('cls').value, '_blank'); // 전체 선택 시 전체 순위
+};
+
+async function load(){
+  $('msg').textContent = '';
+  if (!API_URL) { $('msg').textContent = 'teacher.html 안의 API_URL이 비어 있어요'; return; }
+  const key = $('key').value.trim(); if (!key) { $('msg').textContent = '비밀번호를 입력하세요'; return; }
+  try { sessionStorage.setItem('teg-key', key); } catch(e) {}
+  const p = new URLSearchParams({action:'stats', key, cls:$('cls').value, date: $('alldate').checked ? 'all' : $('date').value});
+  $('go').disabled = true; $('go').textContent = '불러오는 중…';
+  try {
+    const j = await (await fetch(API_URL + '?' + p)).json();
+    if (!j.ok) throw new Error(j.error);
+    render(j);
+  } catch(e) { $('msg').textContent = '불러오기 실패: ' + e.message; }
+  $('go').disabled = false; $('go').textContent = '불러오기';
+}
+
+function render(j){
+  $('c-students').textContent = j.summary.students;
+  $('c-plays').textContent = j.summary.plays;
+  $('c-avg').textContent = j.summary.avg;
+  $('groups').innerHTML = j.groups.map(g => {
+    const r = g.total ? g.wrong / g.total : 0;
+    const col = r >= .3 ? 'var(--coral)' : r >= .15 ? 'var(--sun)' : 'var(--mint)';
+    return `<div class="g"><span class="nm jp">${LABEL[g.g]}</span><span class="tr"><span class="fl" style="display:block;width:${g.total? Math.max(r*100,2):0}%;background:${col}"></span></span>`+
+      `<span class="v">${g.total ? Math.round(r*100)+'% ('+g.wrong+'/'+g.total+')' : '출제 없음'}</span></div>`;
+  }).join('');
+  $('verbs').innerHTML = j.verbs.length ? j.verbs.map(v =>
+    `<tr><td class="jp">${esc(v.v)}</td><td class="jp">${LABEL[v.g]||''}</td><td class="r">${v.wrong}/${v.total}</td><td class="r">${Math.round(v.wrong/v.total*100)}%</td></tr>`
+  ).join('') : '<tr><td colspan="4" style="color:var(--muted)">틀린 동사가 없어요</td></tr>';
+  STU = j.students; drawStudents();
+}
+function drawStudents(){
+  const rows = STU.slice().sort((a,b) => {
+    const x = a[sortK], y = b[sortK];
+    return (typeof x === 'number' ? x - y : String(x).localeCompare(String(y))) * sortDir || String(a.sid).localeCompare(String(b.sid));
+  });
+  $('students').innerHTML = rows.length ? rows.map(s => {
+    const c = s.acc >= 80 ? 'hi' : s.acc >= 50 ? 'mid' : 'low';
+    return `<tr><td>${esc(s.sid)}</td><td>${esc(s.name)}</td><td class="r">${s.plays}</td><td class="r">${s.best}</td>`+
+      `<td class="r"><span class="pill ${c}">${s.acc}%</span></td><td class="jp">${s.weak ? LABEL[s.weak]+' ('+s.weakCount+'회)' : '—'}</td></tr>`;
+  }).join('') : '<tr><td colspan="6" style="color:var(--muted)">기록이 없어요</td></tr>';
+}
+document.querySelectorAll('th[data-k]').forEach(th => th.onclick = () => {
+  const k = th.dataset.k; sortDir = (sortK === k) ? -sortDir : (['best','acc','plays'].includes(k) ? -1 : 1); sortK = k; drawStudents();
+});
+</script>
+</body>
+</html>

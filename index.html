@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>て형 조립 챌린지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;800&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#1b1f3b; --bg2:#262b52; --card:#ffffff; --ink:#1b1f3b;
+  --coral:#ff6b6b; --mint:#3ddc97; --sun:#ffd166; --sky:#6ec5ff; --muted:#a9aed6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:radial-gradient(circle at 20% 0%,#2d3470 0%,var(--bg) 60%);color:#fff;
+  font-family:'Noto Sans KR',system-ui,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.jp{font-family:'Noto Sans JP','Noto Sans KR',sans-serif}
+#app{max-width:520px;margin:0 auto;min-height:100%;padding:18px 16px 28px;display:flex;flex-direction:column}
+.screen{display:none;flex:1;flex-direction:column}
+.screen.active{display:flex}
+h1{font-size:30px;font-weight:900;line-height:1.2;text-align:center;margin:18px 0 6px}
+h1 .jp{color:var(--sun)}
+.sub{color:var(--muted);text-align:center;font-size:14px;margin-bottom:22px}
+.panel{background:var(--bg2);border-radius:18px;padding:18px;margin-bottom:14px}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 6px}
+select,input{width:100%;font-size:18px;padding:12px 14px;border-radius:12px;border:2px solid #3a4180;
+  background:#141833;color:#fff;font-family:inherit;-webkit-user-select:text;user-select:text}
+.row{display:flex;gap:10px}.row>div{flex:1}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:16px;font-size:19px;font-weight:900;
+  font-family:inherit;cursor:pointer;margin-top:10px;transition:transform .08s}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--sun);color:var(--ink);box-shadow:0 5px 0 #c99a2e}
+.btn.ghost{background:transparent;color:#fff;border:2px solid #3a4180}
+.rules{font-size:14px;line-height:1.7;color:#d6d9f5}
+.rules b{color:var(--sun)}
+.err{color:var(--coral);font-size:14px;margin-top:8px;min-height:20px;text-align:center}
+.mode{font-size:12px;text-align:center;color:var(--muted);margin-top:10px}
+
+/* game */
+.hud{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.timer{font-size:28px;font-weight:900;font-variant-numeric:tabular-nums;min-width:86px}
+.timer.hurry{color:var(--coral);animation:pulse .6s infinite}
+.hearts{font-size:24px;letter-spacing:2px}
+.hearts .off{opacity:.2}
+.score{text-align:right}
+.score .n{font-size:26px;font-weight:900;color:var(--sun);font-variant-numeric:tabular-nums}
+.score .l{font-size:11px;color:var(--muted)}
+.bar{height:6px;background:#141833;border-radius:6px;overflow:hidden;margin-bottom:16px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--mint),var(--sky));width:100%;transition:width .2s linear}
+.combo{height:34px;text-align:center;font-size:22px;font-weight:900;color:var(--coral)}
+.combo.pop{animation:pop .35s}
+.qcard{background:var(--card);color:var(--ink);border-radius:22px;padding:22px 16px 20px;text-align:center;
+  box-shadow:0 8px 0 #c9cdea;margin-bottom:22px;position:relative}
+.qcard.ok{box-shadow:0 8px 0 var(--mint);background:#eafff5}
+.qcard.ng{box-shadow:0 8px 0 var(--coral);background:#fff0f0;animation:shake .35s}
+.qlabel{font-size:12px;color:#7a7fa8;font-weight:700}
+.verb{font-size:48px;font-weight:800;margin:4px 0 0;letter-spacing:2px}
+.mean{font-size:16px;color:#5a5f8a;margin-bottom:16px}
+.build{display:flex;justify-content:center;align-items:center;gap:6px;font-size:38px;font-weight:800}
+.stem{padding:0 4px}
+.slot{width:64px;height:68px;border-radius:14px;border:3px dashed #b3b7dc;display:flex;align-items:center;
+  justify-content:center;background:#f4f5ff;cursor:pointer}
+.slot.filled{border:3px solid var(--sky);background:#e7f5ff}
+.answer{height:26px;margin-top:12px;font-size:18px;font-weight:800}
+.answer.ok{color:#14a86b}.answer.ng{color:#e04848}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:auto}
+.tile{height:84px;border-radius:18px;border:0;background:#fff;color:var(--ink);font-size:40px;font-weight:800;
+  box-shadow:0 6px 0 #b8bce0;cursor:pointer;font-family:'Noto Sans JP',sans-serif}
+.tile:active{transform:translateY(4px);box-shadow:0 2px 0 #b8bce0}
+.tile:disabled{opacity:.5}
+.hint{text-align:center;color:var(--muted);font-size:12px;margin-top:12px}
+
+/* result */
+.big{font-size:64px;font-weight:900;color:var(--sun);text-align:center;line-height:1}
+.stats{display:flex;justify-content:space-around;text-align:center;margin-top:14px}
+.stats b{display:block;font-size:22px}
+.stats span{font-size:12px;color:var(--muted)}
+.gline{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:14px}
+.gline .g{width:92px;font-family:'Noto Sans JP','Noto Sans KR',sans-serif}
+.gline .track{flex:1;height:12px;background:#141833;border-radius:8px;overflow:hidden}
+.gline .fill{height:100%;border-radius:8px}
+.gline .v{width:54px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+h3{font-size:15px;margin-bottom:8px}
+.rank{list-style:none}
+.rank li{display:flex;align-items:center;padding:9px 6px;border-bottom:1px solid #343a6e;font-size:16px}
+.rank li .no{width:38px;font-weight:900;color:var(--muted)}
+.rank li .nm{flex:1}
+.rank li .sc{font-weight:900;color:var(--sun);font-variant-numeric:tabular-nums}
+.rank li.me{background:#3a4180;border-radius:10px}
+.rank li:nth-child(1) .no{color:#ffd166}.rank li:nth-child(2) .no{color:#d7dbe8}.rank li:nth-child(3) .no{color:#e3a36b}
+.seg{display:flex;background:#141833;border-radius:12px;padding:4px;margin-bottom:10px}
+.seg button{flex:1;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700;font-size:15px;padding:9px;border-radius:9px;cursor:pointer}
+.seg button.on{background:#3a4180;color:#fff}
+.rank li .cl{font-size:12px;color:var(--muted);margin-left:6px}
+#s-board .rank li .cl{font-size:20px}
+.status{font-size:13px;color:var(--muted);text-align:center;margin:6px 0}
+
+/* projector rank */
+#s-board h1{font-size:40px}
+#s-board .rank li{font-size:28px;padding:14px 10px}
+#s-board .rank li .no{width:70px}
+body.board #app{max-width:900px}
+
+@keyframes pulse{50%{opacity:.45}}
+@keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- 시작 -->
+<section id="s-start" class="screen active">
+  <h1><span class="jp">て形</span> 조립 챌린지</h1>
+  <p class="sub">5단 동사 て형을 3분 안에 최대한 많이 만들어라!</p>
+  <div class="panel">
+    <div class="row">
+      <div style="flex:0 0 40%"><label>학번 (4자리)</label><input id="in-sid" type="text" inputmode="numeric" maxlength="4" placeholder="예: 2612"></div>
+      <div><label>이름</label><input id="in-name" maxlength="10" placeholder="예: 최용준"></div>
+    </div>
+    <p class="mode" style="text-align:left;margin-top:8px">학번 = 학년 1자리 + 반 1자리 + 번호 2자리 (2학년 6반 12번 → 2612)</p>
+    <div class="err" id="start-err"></div>
+    <button class="btn primary" id="btn-start">게임 시작</button>
+    <div class="row"><div><button class="btn ghost" id="btn-rank">우리 반 순위</button></div><div><button class="btn ghost" id="btn-rank-all">전체 순위</button></div></div>
+  </div>
+  <div class="panel rules">
+    ① 히라가나 기본형을 보고<br>
+    ② 아래 조각을 <b>순서대로 두 개</b> 눌러 て형을 완성!<br>
+    ③ 연속으로 맞히면 <b>콤보 보너스</b>, 틀리면 <b>♥ 하나</b> 사라져요<br>
+    ④ 3분이 지나거나 ♥ 3개를 모두 잃으면 끝!
+  </div>
+  <div class="mode" id="mode-note"></div>
+</section>
+
+<!-- 게임 -->
+<section id="s-game" class="screen">
+  <div class="hud">
+    <div class="timer" id="g-timer">3:00</div>
+    <div class="hearts" id="g-hearts"></div>
+    <div class="score"><div class="n" id="g-score">0</div><div class="l">점수</div></div>
+  </div>
+  <div class="bar"><i id="g-bar"></i></div>
+  <div class="combo" id="g-combo"></div>
+  <div class="qcard" id="g-card">
+    <div class="qlabel">기본형</div>
+    <div class="verb jp" id="g-verb"></div>
+    <div class="mean" id="g-mean"></div>
+    <div class="build jp">
+      <span class="stem" id="g-stem"></span>
+      <div class="slot" data-i="0"></div>
+      <div class="slot" data-i="1"></div>
+    </div>
+    <div class="answer jp" id="g-answer"></div>
+  </div>
+  <div class="tiles" id="g-tiles"></div>
+  <p class="hint">잘못 넣은 조각은 빈칸을 눌러 빼세요</p>
+</section>
+
+<!-- 결과 -->
+<section id="s-result" class="screen">
+  <h1 id="r-title">게임 종료!</h1>
+  <div class="panel">
+    <div class="big" id="r-score">0</div>
+    <div class="stats">
+      <div><b id="r-ok">0</b><span>정답</span></div>
+      <div><b id="r-ng">0</b><span>오답</span></div>
+      <div><b id="r-combo">0</b><span>최대 콤보</span></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>어미 그룹별 정답률</h3>
+    <div id="r-groups"></div>
+  </div>
+  <div class="panel">
+    <h3>순위 <span style="font-weight:400;font-size:12px;color:var(--muted)">학생별 최고점</span></h3>
+    <div class="seg" id="r-seg"><button data-s="cls" class="on" id="seg-cls">우리 반</button><button data-s="all">전체</button></div>
+    <div class="status" id="r-status"></div>
+    <ul class="rank" id="r-rank"></ul>
+  </div>
+  <button class="btn primary" id="btn-again">한 번 더!</button>
+  <button class="btn ghost" id="btn-home">처음으로</button>
+</section>
+
+<!-- 순위 보기 (프로젝터용 겸용) -->
+<section id="s-board" class="screen">
+  <h1 id="b-title">순위</h1>
+  <p class="sub" id="b-sub"></p>
+  <div class="seg" id="b-seg"><button data-s="cls" id="bseg-cls">우리 반</button><button data-s="all">전체</button></div>
+  <div class="panel"><ul class="rank" id="b-rank"></ul><div class="status" id="b-status"></div></div>
+  <button class="btn ghost" id="btn-board-home">처음으로</button>
+</section>
+
+</div>
+
+<script>
+/* ================= 설정 ================= */
+// ① Apps Script 웹 앱 URL을 따옴표 안에 붙여넣으세요. 비워두면 '연습 모드'(저장·순위 없음)로 동작합니다.
+const API_URL = 'https://script.google.com/macros/s/AKfycbxXIezyeLZweTt5VjMhuvD9mYdxmqlEspROrnPRz85M8alxo7hzc7fXDIBFJIMjhtfoxA/exec';
+const GAME_SECONDS = 180;   // 한 판 시간(초)
+const HEARTS = 3;           // 하트 수
+
+// ② 출제 동사 목록 [히라가나 기본형, 한국어 뜻] — 수업에서 다룬 동사로 자유롭게 바꾸세요 (5단 동사만)
+const VERBS = [
+  ['かう','사다'],['あう','만나다'],['いう','말하다'],['うたう','노래하다'],['つかう','사용하다'],['ならう','배우다'],
+  ['まつ','기다리다'],['もつ','들다, 가지다'],['たつ','서다'],['かつ','이기다'],
+  ['わかる','알다'],['つくる','만들다'],['のる','타다'],['かえる','돌아가다'],['はいる','들어가다'],['とる','찍다, 잡다'],
+  ['よむ','읽다'],['のむ','마시다'],['すむ','살다'],['やすむ','쉬다'],
+  ['あそぶ','놀다'],['よぶ','부르다'],['とぶ','날다'],['えらぶ','고르다'],
+  ['しぬ','죽다'],
+  ['かく','쓰다'],['きく','듣다'],['あるく','걷다'],['はたらく','일하다'],['なく','울다'],
+  ['およぐ','헤엄치다'],['いそぐ','서두르다'],['ぬぐ','벗다'],
+  ['はなす','이야기하다'],['かす','빌려주다'],['だす','내다'],['さがす','찾다'],
+  ['いく','가다'],
+];
+/* ======================================= */
+
+const GROUP_LABEL = {'うつる':'う・つ・る','むぶぬ':'む・ぶ・ぬ','く':'く','ぐ':'ぐ','す':'す','いく':'いく(예외)'};
+const GROUP_ORDER = ['うつる','むぶぬ','く','ぐ','す','いく'];
+const SUFFIX = {'うつる':['っ','て'],'むぶぬ':['ん','で'],'く':['い','て'],'ぐ':['い','で'],'す':['し','て'],'いく':['っ','て']};
+const TILES = ['っ','ん','い','し','て','で'];
+
+function groupOf(v){
+  if (v === 'いく') return 'いく';
+  const e = v.slice(-1);
+  if ('うつる'.includes(e)) return 'うつる';
+  if ('むぶぬ'.includes(e)) return 'むぶぬ';
+  return e; // く ぐ す
+}
+const $ = id => document.getElementById(id);
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); window.scrollTo(0,0); }
+function pointsFor(combo){ return 10 + Math.min(combo-1, 10) * 2; } // 콤보 1→10점, 2→12점 … 최대 30점
+
+/* ---------- 시작 화면 ---------- */
+let player = {};
+try { player = JSON.parse(localStorage.getItem('teg-player')||'{}'); } catch(e) {}
+$('in-sid').value = player.sid||''; $('in-name').value = player.name||'';
+$('mode-note').textContent = API_URL ? '' : '⚠ 연습 모드: 서버 주소가 설정되지 않아 점수가 저장되지 않아요';
+
+function readPlayer(){
+  const sid = $('in-sid').value.trim(), name = $('in-name').value.trim();
+  const m = /^([1-3])([1-9])(\d\d)$/.exec(sid);
+  if (!m || +m[3] < 1 || +m[3] > 40) return '학번 4자리를 확인하세요 (예: 2612)';
+  if (name.length < 2) return '이름을 입력하세요';
+  player = {sid, name, cls: m[2]};
+  try { localStorage.setItem('teg-player', JSON.stringify(player)); } catch(e) {}
+  return '';
+}
+$('btn-start').onclick = () => { const e = readPlayer(); $('start-err').textContent = e; if (!e) startGame(); };
+$('btn-rank').onclick = () => {
+  const m = /^[1-3]([1-9])\d\d$/.exec($('in-sid').value.trim());
+  if (!m) { $('start-err').textContent = '우리 반 순위를 보려면 학번을 입력하세요'; return; }
+  const cls = m[1];
+  openBoard(cls, false);
+};
+$('btn-rank-all').onclick = () => { const m = /^[1-3]([1-9])\d\d$/.exec($('in-sid').value.trim()); openBoard('all', false, m ? m[1] : ''); };
+
+/* ---------- 게임 ---------- */
+let G = null, tick = null;
+
+function startGame(){
+  G = {deck:[], q:null, filled:[], score:0, combo:0, maxCombo:0, hearts:HEARTS,
+       details:[], locked:false, endAt: Date.now() + GAME_SECONDS*1000, over:false};
+  $('g-score').textContent = '0'; $('g-combo').textContent = '';
+  renderHearts(); show('s-game'); nextQ();
+  clearInterval(tick); tick = setInterval(updateTimer, 200); updateTimer();
+}
+function updateTimer(){
+  const left = Math.max(0, G.endAt - Date.now());
+  const s = Math.ceil(left/1000);
+  $('g-timer').textContent = Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
+  $('g-timer').classList.toggle('hurry', s <= 10);
+  $('g-bar').style.width = (left / (GAME_SECONDS*1000) * 100) + '%';
+  if (left <= 0) endGame('시간 종료!');
+}
+function renderHearts(){
+  let h=''; for (let i=0;i<HEARTS;i++) h += `<span class="${i<G.hearts?'':'off'}">♥</span>`;
+  $('g-hearts').innerHTML = h; $('g-hearts').style.color = 'var(--coral)';
+}
+function nextQ(){
+  if (!G.deck.length) {
+    G.deck = shuffle(VERBS);
+    if (G.q && G.deck[0][0] === G.q[0]) G.deck.push(G.deck.shift()); // 같은 동사 연속 방지
+  }
+  G.q = G.deck.shift(); G.filled = []; G.locked = false;
+  const [v, m] = G.q;
+  $('g-verb').textContent = v; $('g-mean').textContent = m;
+  $('g-stem').textContent = v.slice(0,-1);
+  $('g-card').className = 'qcard'; $('g-answer').textContent = ''; $('g-answer').className = 'answer jp';
+  renderSlots();
+  $('g-tiles').innerHTML = shuffle(TILES).map(t => `<button class="tile" data-t="${t}">${t}</button>`).join('');
+}
+function renderSlots(){
+  document.querySelectorAll('.slot').forEach((el,i) => {
+    el.textContent = G.filled[i] || ''; el.classList.toggle('filled', !!G.filled[i]);
+  });
+}
+$('g-tiles').addEventListener('pointerdown', e => {
+  const b = e.target.closest('.tile'); if (!b || !G || G.locked || G.over) return;
+  e.preventDefault();
+  if (G.filled.length >= 2) return;
+  G.filled.push(b.dataset.t); renderSlots();
+  if (G.filled.length === 2) { G.locked = true; setTimeout(check, 120); }
+});
+document.querySelectorAll('.slot').forEach(el => el.addEventListener('pointerdown', e => {
+  if (!G || G.locked || G.over) return;
+  const i = +el.dataset.i; if (G.filled[i] === undefined) return;
+  G.filled.splice(i, 1); renderSlots();
+}));
+
+function check(){
+  if (G.over) return;
+  const [v] = G.q, g = groupOf(v), want = SUFFIX[g].join(''), got = G.filled.join('');
+  const ok = got === want, full = v.slice(0,-1) + want;
+  G.details.push({v, g, a: got, ok: ok ? 1 : 0});
+  if (ok) {
+    G.combo++; G.maxCombo = Math.max(G.maxCombo, G.combo);
+    G.score += pointsFor(G.combo);
+    $('g-score').textContent = G.score;
+    $('g-card').className = 'qcard ok';
+    $('g-answer').className = 'answer jp ok'; $('g-answer').textContent = '⭕ ' + full;
+    const c = $('g-combo');
+    c.textContent = G.combo >= 2 ? `COMBO ×${G.combo}  +${pointsFor(G.combo)}` : '+10';
+    c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop');
+    setTimeout(nextQ, 380);
+  } else {
+    G.combo = 0; G.hearts--; renderHearts();
+    $('g-combo').textContent = '';
+    $('g-card').className = 'qcard ng';
+    $('g-answer').className = 'answer jp ng'; $('g-answer').textContent = '정답: ' + full;
+    if (G.hearts <= 0) { setTimeout(() => endGame('하트를 모두 잃었어요'), 1100); }
+    else setTimeout(nextQ, 1100);
+  }
+}
+
+function endGame(title){
+  if (G.over) return; G.over = true; clearInterval(tick);
+  const ok = G.details.filter(d=>d.ok).length;
+  $('r-title').textContent = title;
+  $('r-score').textContent = G.score;
+  $('r-ok').textContent = ok; $('r-ng').textContent = G.details.length - ok; $('r-combo').textContent = G.maxCombo;
+  // 그룹별 정답률
+  $('r-groups').innerHTML = GROUP_ORDER.map(g => {
+    const ds = G.details.filter(d=>d.g===g); if (!ds.length) return '';
+    const r = ds.filter(d=>d.ok).length / ds.length;
+    const col = r >= .8 ? 'var(--mint)' : r >= .5 ? 'var(--sun)' : 'var(--coral)';
+    return `<div class="gline"><span class="g">${GROUP_LABEL[g]}</span><span class="track"><span class="fill" style="display:block;width:${Math.max(r*100,4)}%;background:${col}"></span></span><span class="v">${ds.filter(d=>d.ok).length}/${ds.length}</span></div>`;
+  }).join('') || '<div class="status">푼 문제가 없어요</div>';
+  setSeg($('r-seg'), 'cls'); $('seg-cls').textContent = `${player.cls}반`;
+  $('r-rank').innerHTML = '';
+  show('s-result');
+  submit();
+}
+
+/* ---------- 서버 ---------- */
+async function api(params){
+  const u = API_URL + '?' + new URLSearchParams(params).toString();
+  const r = await fetch(u); return r.json();
+}
+async function submit(){
+  if (!API_URL) { $('r-status').textContent = '연습 모드라 점수가 저장되지 않았어요'; return; }
+  $('r-status').textContent = '점수 저장 중…';
+  try {
+    const r = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({sid:player.sid, name:player.name, score:G.score, details:G.details})});
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error||'저장 실패');
+    $('r-status').textContent = j.isNew ? `🎉 최고 기록 갱신! 내 최고점 ${j.best}점` : `저장 완료! 내 최고점은 ${j.best}점이에요`;
+  } catch(e) { $('r-status').textContent = '저장 실패: ' + e.message + ' (선생님께 알려주세요)'; }
+  loadRank(player.cls, $('r-rank'), $('r-status'), true);
+}
+async function loadRank(cls, ul, st, mine){
+  if (!API_URL) { st.textContent = '연습 모드에서는 순위가 표시되지 않아요'; return; }
+  try {
+    const q = {action:'rank', cls}; if (mine) q.me = player.sid;
+    const j = await api(q);
+    if (!j.ok) throw new Error(j.error);
+    ul.innerHTML = j.rank.length ? j.rank.map((r,i) =>
+      `<li class="${r.me?'me':''}"><span class="no">${i+1}</span><span class="nm">${esc(r.name)}${r.cls ? `<span class="cl">${r.cls}반</span>` : ''}</span><span class="sc">${r.score}</span></li>`
+    ).join('') : '<li><span class="nm">아직 기록이 없어요</span></li>';
+    if (st.textContent.startsWith('점수') || st.textContent.startsWith('순위') || st === $('b-status')) st.textContent = '';
+  } catch(e) { st.textContent = '순위를 불러오지 못했어요'; }
+}
+
+/* ---------- 순위 보기 / 프로젝터 ---------- */
+let boardTimer = null, boardCls = '';
+function setSeg(seg, v){ seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.s === v)); }
+function openBoard(cls, projector, homeCls){
+  if (homeCls !== undefined) boardCls = homeCls; else if (cls !== 'all') boardCls = cls;
+  const all = cls === 'all';
+  $('b-title').textContent = all ? '전체 순위' : `${cls}반 순위`;
+  $('b-sub').textContent = '학생별 최고점 기준' + (projector ? ' · 5초마다 자동 새로고침' : '');
+  $('btn-board-home').style.display = projector ? 'none' : '';
+  $('b-seg').style.display = (!projector && boardCls) ? '' : 'none';
+  if (boardCls) $('bseg-cls').textContent = `${boardCls}반`;
+  setSeg($('b-seg'), all ? 'all' : 'cls');
+  show('s-board');
+  $('b-rank').innerHTML = '';
+  const run = () => loadRank(cls, $('b-rank'), $('b-status'), false);
+  run(); clearInterval(boardTimer); if (projector) boardTimer = setInterval(run, 5000);
+}
+$('b-seg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  openBoard(b.dataset.s === 'all' ? 'all' : boardCls, false);
+});
+$('r-seg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  setSeg($('r-seg'), b.dataset.s);
+  $('r-rank').innerHTML = ''; $('r-status').textContent = '순위 불러오는 중…';
+  loadRank(b.dataset.s === 'all' ? 'all' : player.cls, $('r-rank'), $('r-status'), true);
+});
+$('btn-board-home').onclick = () => { clearInterval(boardTimer); show('s-start'); };
+$('btn-again').onclick = startGame;
+$('btn-home').onclick = () => show('s-start');
+
+// 프로젝터용: index.html?board=6 → 6반 순위, ?board=all → 전체 순위 (크게, 자동 새로고침)
+const qs = new URLSearchParams(location.search);
+if (/^([1-6]|all)$/.test(qs.get('board')||'')) { document.body.classList.add('board'); openBoard(qs.get('board'), true); }
+</script>
+</body>
+</html>
